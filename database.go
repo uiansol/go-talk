@@ -52,3 +52,21 @@ func (c *Config) CreateUser(name, password string) (*User, error) {
 
 	return &user, nil
 }
+
+func (c *Config) CheckLogin(name, password string) error {
+	var user User
+	if err := c.DB.Where("name = ?", name).First(&user).Error; err != nil {
+		return err
+	}
+
+	return CheckPassword([]byte(user.Password), []byte(password))
+}
+
+func (c *Config) CreateMessage(userName string, text string) (*Message, error) {
+	message := Message{UserName: userName, Text: text}
+	if err := c.DB.Create(&message).Error; err != nil {
+		return nil, err
+	}
+
+	return &message, nil
+}
