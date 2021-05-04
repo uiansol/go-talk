@@ -1,7 +1,9 @@
 package main
 
 import (
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 type Config struct {
@@ -20,4 +22,19 @@ type Message struct {
 	UserName  string `json:"user_name"`
 	Text      string `json:"text"`
 	CreatedAt int64  `json:"created_at" gorm:"index,autoCreateTime:milli"`
+}
+
+func DBConnect(dsn string) (*gorm.DB, error) {
+	return gorm.Open(sqlite.Open(dsn), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Silent),
+	})
+}
+
+func (c *Config) EnsureDBSetup() error {
+	err := c.DB.AutoMigrate(&User{})
+	if err != nil {
+		return err
+	}
+
+	return c.DB.AutoMigrate(&Message{})
 }
