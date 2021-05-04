@@ -38,3 +38,17 @@ func (c *Config) EnsureDBSetup() error {
 
 	return c.DB.AutoMigrate(&Message{})
 }
+
+func (c *Config) CreateUser(name, password string) (*User, error) {
+	hashedPassword, err := CreatePassword([]byte(password))
+	if err != nil {
+		return nil, err
+	}
+
+	user := User{Name: name, Password: string(hashedPassword)}
+	if err := c.DB.Create(&user).Error; err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
