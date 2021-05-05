@@ -1,10 +1,19 @@
 package main
 
 import (
+	"time"
+
 	"github.com/go-chi/jwtauth"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+)
+
+type ByTime int
+
+const (
+	newer ByTime = iota
+	older
 )
 
 type Config struct {
@@ -71,4 +80,24 @@ func (c *Config) CreateMessage(userName string, text string) (*Message, error) {
 	}
 
 	return &message, nil
+}
+
+func (c *Config) GetMessagesByTime(limit int, t time.Time, b ByTime) ([]Message, error) {
+	var whereClause = "created_at > ?"
+	var orderClause = "created_at ASC"
+	if b == older {
+		whereClause = "created_at < ?"
+		orderClause = "created_at DESC"
+	}
+
+	query := c.DB.Table("messages").
+		Where(whereClause, t).
+		Order(orderClause).
+		Limit(limit)
+
+	var messages []Message
+	if err := query.Find(&messages).Error; err != nil {
+		return nil, err
+	}
+	return messages, nil
 }
