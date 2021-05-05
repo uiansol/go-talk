@@ -1,13 +1,15 @@
 package main
 
 import (
+	"github.com/go-chi/jwtauth"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
 
 type Config struct {
-	DB *gorm.DB
+	DB        *gorm.DB
+	TokenAuth *jwtauth.JWTAuth
 }
 
 type User struct {
