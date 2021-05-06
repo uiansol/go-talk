@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -13,7 +14,44 @@ import (
 )
 
 func main() {
+	var config Config
 
+	port := "8080"
+	if fromEnv := os.Getenv("PORT"); fromEnv != "" {
+		port = fromEnv
+	}
+
+	dsn := "go-talk.db"
+	if fromEnv := os.Getenv("DB_DSN"); fromEnv != "" {
+		dsn = fromEnv
+	}
+
+	jwtSecret := "go-servers"
+	if fromEnv := os.Getenv("JWT_SECRET"); fromEnv != "" {
+		jwtSecret = fromEnv
+	}
+	config.TokenAuth = jwtauth.New("HS256", []byte(jwtSecret), nil)
+
+	f, err := os.OpenFile("server.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.SetOutput(f)
+
+	db, err := DBConnect(dsn)
+	if err != nil {
+		log.Fatalf("db conn failure: %v", err)
+	}
+	config.DB = db
+
+	err = config.EnsureDBSetup()
+	if err != nil {
+		log.Fatalf("db setup failure: %v", err)
+	}
+
+	router := config.SetupRoutes()
+	log.Printf("Starting up on http://localhost:%s", port)
+	log.Println(http.ListenAndServe(":"+port, router))
 }
 
 func (c *Config) SetupRoutes() *chi.Mux {
