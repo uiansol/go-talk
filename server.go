@@ -39,6 +39,10 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "index.html")
 }
 
+func APIChatHandler(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "chat.html")
+}
+
 func (c *Config) NewUserPostHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	userName := r.PostForm.Get("user")

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <style>
+      .message {
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+        padding: 0 10px 0 10px;
+      }
+
+      span {
+        margin-left: 10px;
+      }
+    </style>
+  </head>
+  <body style="margin: 0;">
+    <div style="display: flex; flex-direction: column; height: 100vh;">
+      <h1 style="margin: 10px;">Chat Server</h1>
+      <div
+        style="display: flex; flex-direction: column-reverse; flex: 1 1 0%; width: 100vw; overflow-y: auto;"
+      >
+        <div id="messages" aria-live="polite">
+          <div class="message">
+            <button onclick="getOlderMessages()">Get Older Messages</button>
+          </div>
+        </div>
+      </div>
+      <form
+        method="post"
+        action="/api/messages"
+        style="display: flex; margin: 10px;"
+      >
+        <input
+          type="text"
+          name="message"
+          id="message-text"
+          style="flex-grow: 2; border: 1px solid #ccc; border-radius: 5px; padding: 10px;"
+        />
+        <button
+          onclick="sendMessage()"
+          type="submit"
+          style="border-radius: 5px;"
+        >
+          Send
+        </button>
+      </form>
+    </div>
+    <script>
+      // We will be writing our frontend code here!
+    </script>
+  </body>
+</html>
