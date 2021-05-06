@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
+	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
@@ -117,4 +119,48 @@ func (c *Config) APIMessagesPostHandler(w http.ResponseWriter, r *http.Request) 
 	} else {
 		w.WriteHeader(http.StatusCreated)
 	}
+}
+
+func (c *Config) APIMessagesHandler(w http.ResponseWriter, r *http.Request) {
+	var (
+		err        error
+		timeParam  string
+		parsedTime int64  = time.Now().UnixNano() / 1e6
+		order      ByTime = older
+		attempts   int    = 1
+	)
+
+	r.ParseForm()
+	timeParam = r.Form.Get("before")
+	since := r.Form.Get("since")
+
+	if since != "" {
+		attempts = 10
+		order = newer
+		timeParam = since
+	}
+
+	if timeParam != "" {
+		if parsedTime, err = strconv.ParseInt(timeParam, 10, 64); err != nil {
+			http.Error(w, "invalid 'before' or 'since' parameter sent", http.StatusBadRequest)
+		}
+	}
+
+	var messages []Message
+	for i := 0; i < attempts; i++ {
+		messages, err = c.GetMessagesByTime(10, parsedTime, order)
+		if err != nil {
+			log.Printf("db failed to get messages: %q", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		if len(messages) != 0 {
+			break
+		}
+		time.Sleep(1 * time.Second)
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	body, _ := json.Marshal(messages)
+	w.Write(body)
 }
