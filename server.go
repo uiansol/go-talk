@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 
@@ -81,4 +82,39 @@ func (c *Config) LoginPostHandler(w http.ResponseWriter, r *http.Request) {
 		Value: token,
 	})
 	http.Redirect(w, r, "/chat", http.StatusSeeOther)
+}
+
+func (c *Config) APIMessagesPostHandler(w http.ResponseWriter, r *http.Request) {
+	var message Message
+	var redirect bool
+
+	if r.Header.Get("Content-type") == "application/json" {
+		err := json.NewDecoder(r.Body).Decode(&message)
+		if err != nil {
+			http.Error(w, "malformed request body", http.StatusBadRequest)
+			return
+		}
+	} else {
+		r.ParseForm()
+		messageText := r.PostForm.Get("message")
+		if messageText == "" {
+			http.Error(w, "malformed request body", http.StatusBadRequest)
+			return
+		}
+		message.Text = messageText
+		redirect = true
+	}
+
+	userName := GetUserNameFromContext(r.Context())
+	if _, err := c.CreateMessage(userName, message.Text); err != nil {
+		log.Printf("db create message failure: %q", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if redirect {
+		http.Redirect(w, r, "/chat", http.StatusSeeOther)
+	} else {
+		w.WriteHeader(http.StatusCreated)
+	}
 }
