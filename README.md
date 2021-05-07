@@ -32,10 +32,13 @@ Run the container
 Visit on a browser
 `localhost:8080/`
 
+Run tests (-v to see the parallelism)
+`go test -v`
+
 ### Future improvements and engineering discussions
 
 * Sqlite3 is a good data base for small or demo purposes. As we are using GORM it is enough for now. For a better architecture we can change to a PostgreSQL or MySQL on a docker container and use docker-compose to link the two containers. In code the modification will be some env variables to store the database credentials and dsn (data source name).
 
 * We could move to a web sockets model instead of using polling. The primary difference here is that instead of users constantly requesting messages, we would push new messages to the users via web sockets. For now it was intended to reduce work time on front end to demonstrate more features on back end with Go.
 
-* Tests for the api and end to end is a plus. But it would require data mocking and a test database that is outside the scope of this project. The few we have are enough to demonstrate how to deal with unit tests in Go.
+* Tests for the api and end to end is a plus. But it would require data mocking and a test database that is outside the scope of this project. The few we have are enough to demonstrate how to deal with unit tests in Go (using tables and parallelizing it).
