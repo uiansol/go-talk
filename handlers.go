@@ -36,6 +36,9 @@ func (c *Config) NewUserPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Publish message to send email
+	publishMail(userName)
+
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
