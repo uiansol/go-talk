@@ -1,0 +1,29 @@
+version: "3.9"
+
+services:
+    rabbitmq:
+        image: rabbitmq:3-management
+        container_name: 'rabbitmq'
+        ports:
+            - 5672:5672
+            - 15672:15672
+        volumes:
+            - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
+            - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
+        networks:
+            - go_talk_net
+    web:
+        container_name: go-talk
+        build:
+            context: .
+            dockerfile: Dockerfile
+        ports:
+            - 8080:8080
+        depends_on:
+            - rabbitmq
+        networks:
+            - go_talk_net
+
+networks:
+    go_talk_net:
+        driver: bridge
